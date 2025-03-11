@@ -14,7 +14,7 @@ class MaintainabilityPredictorWeb:
         
         # Define column names for prediction
         self.columnas = [
-            'code_smells', 'major_violations', 'blocker_violations', 'sqale_debt_ratio',
+            'code_smells', 'major_violations', 'blocker_violations','maintainability_issues', 'sqale_debt_ratio',
             'duplicated_files', 'minor_violations', 'files', 'duplicated_lines_density',
             'critical_violations', 'effort_to_reach_maintainability_rating_a',
             'uncovered_lines', 'classes', 'forks', 'total_contributors',
@@ -62,11 +62,18 @@ class MaintainabilityPredictorWeb:
                 # Make prediction
                 prediccion = self.model.predict(df)
                 
+                # Map prediction to message
+                mensajes_mantenibilidad = {
+                    0: ("🟢 Mantenibilidad del Proyecto: ALTA", "success"),
+                    1: ("🔴 Mantenibilidad del Proyecto: BAJA", "error"),
+                    2: ("🟡 Mantenibilidad del Proyecto: MEDIA", "warning")
+                }
+
+                mensaje, tipo_alerta = mensajes_mantenibilidad.get(prediccion[0], ("⚠️ Valor no reconocido", "warning"))
+
                 # Display results
-                if prediccion[0] == 0:
-                    st.error("🔴 Mantenibilidad del Proyecto: BAJA")
-                else:
-                    st.success("🟢 Mantenibilidad del Proyecto: ALTA")
+                getattr(st, tipo_alerta)(mensaje)
+
             except Exception as e:
                 st.error(f"Error en la predicción: {str(e)}")
 
